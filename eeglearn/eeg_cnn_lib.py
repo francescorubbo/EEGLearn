@@ -63,7 +63,7 @@ def gen_images(locs, features, n_gridpoints, normalize=True,
     nElectrodes = locs.shape[0]     # Number of electrodes
     # Test whether the feature vector length is divisible by number of electrodes
     assert features.shape[1] % nElectrodes == 0
-    n_colors = features.shape[1] / nElectrodes
+    n_colors = int(features.shape[1] / nElectrodes)
     for c in range(n_colors):
         feat_array_temp.append(features[:, c * nElectrodes : nElectrodes * (c+1)])
     if augment:
@@ -90,7 +90,7 @@ def gen_images(locs, features, n_gridpoints, normalize=True,
         for c in range(n_colors):
             feat_array_temp[c] = np.append(feat_array_temp[c], np.zeros((nSamples, 4)), axis=1)
     # Interpolating
-    for i in xrange(nSamples):
+    for i in range(nSamples):
         for c in range(n_colors):
             temp_interp[c][i, :, :] = griddata(locs, feat_array_temp[c][i, :], (grid_x, grid_y),
                                     method='cubic', fill_value=np.nan)
@@ -470,7 +470,7 @@ if __name__ == '__main__':
     # CNN Mode
     print('Generating images...')
     # Find the average response over time windows
-    av_feats = reduce(lambda x, y: x+y, [feats[:, i*192:(i+1)*192] for i in range(feats.shape[1] / 192)])
+    av_feats = reduce(lambda x, y: x+y, [feats[:, i*192:(i+1)*192] for i in range(int(feats.shape[1] / 192))])
     av_feats = av_feats / (feats.shape[1] / 192)
     images = gen_images(np.array(locs_2d),
                                   av_feats,
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     print('Generating images for all time windows...')
     images_timewin = np.array([gen_images(np.array(locs_2d),
                                                     feats[:, i * 192:(i + 1) * 192], 32, normalize=False) for i in
-                                         range(feats.shape[1] / 192)
+                                         range(int(feats.shape[1] / 192))
                                          ])
     print('\n')
     print('Training the LSTM-CONV Model...')
